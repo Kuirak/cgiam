@@ -42,11 +42,14 @@ function initScene(scene) {
     // indices
     var indices = [ 0, 1, 2 ];
     scene.setIndices(indices);
+
     //
     // modelViewMatrix
     var modelViewMatrix = mat4.create();
+
     mat4.rotateZ(modelViewMatrix,modelViewMatrix,0.5);
     var vector3 = vec3.create();
+
     vec3.set(vector3,0.7,0.2,0);
     mat4.translate(modelViewMatrix,modelViewMatrix,vector3);
     scene.setModelViewMatrix(modelViewMatrix);
