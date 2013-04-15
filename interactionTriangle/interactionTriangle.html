@@ -1,0 +1,31 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+       "http://www.w3.org/TR/html4/loose.dtd">
+<html title="interactionTriangle">
+
+<!-- Quelle: http://learningwebgl.com/lessons/lesson01/index.html -->
+
+<head>
+    <title>interactionTriangle</title>
+    <meta http-equiv="Content-Type"
+    content="text/html; charset=utf-8" />
+    
+    <script type="text/javascript" src="../util/webgl-utils.js"></script>
+    <script type="text/javascript" src="../util/gl-matrix-min.js"></script>
+    <script type="text/javascript" src="../util/ShaderProgram.js"></script>
+    <script type="text/javascript" src="../util/SimpleScene.js"></script>
+    <script type="text/javascript" src="js/interactionTriangle.js"></script>
+</head>
+
+<!-- allow for right mouse button interaction -->
+<body oncontextmenu="return false">
+
+<body onload="webGLStart();">
+    <canvas id="triang-canvas" style="border: none;" width="500" height="500"></canvas>
+
+<h2> Interaction </h2>
+<form name="Formular" action="">
+    <input type="button" value="reset" onclick="doReset();"> 
+</form>
+
+</body>
+</html>

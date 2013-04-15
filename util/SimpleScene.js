@@ -21,35 +21,46 @@ along with the cgiam WebGL course software.  If not, see
     
 =========================================================================*/
 
-var SimpleScene2D = function(canvas){
+var SimpleScene = function(canvas, 
+        vertexShaderFileName, fragmentShaderFileName){
     this.canvas = canvas;
     //
     // global variables
     this.useTexture = false;
     this.nrOfTriangleIndices = 0;
-    this.triangleVertexPositionBuffer = 0;
-    this.triangleVertexColorBuffer = 0;
-    this.triangleIndexBuffer = 0;
-    this.texture = 0;
-    this.textureCoordinateBuffer = 0;
+    this.ccR=0.0; this.ccG=0.0; this.ccB=0.0;
+    //
+    //tMatrix for anaglyph output
+    this.tMatrix = mat4.create();
+    //
+    // keep Buffers undefined
+    this.triangleVertexPositionBuffer;
+    this.triangleVertexNormalBuffer;
+    this.triangleVertexColorBuffer;
+    this.triangleIndexBuffer;
+    this.textureCoordinateBuffer;
+    this.texture=0;
     //
     // create OpenGL context
     this.gl = WebGLUtils.setupWebGL(canvas);
     this.gl.viewportWidth = canvas.width;
     this.gl.viewportHeight = canvas.height;
     //
+    // set shader file names - use default values if parameters
+    // are not defined
+    vertexShaderFileName = 
+        vertexShaderFileName || "../util/defaultShader2D.vert";
+    fragmentShaderFileName = 
+        fragmentShaderFileName || "../util/defaultShader2D.frag";
+    //
     // create shader program
     this.shaderProgram = new ShaderProgram(this.gl);
-    this.shaderProgram.addShader(this.gl.FRAGMENT_SHADER,
-        "../util/defaultShader2D.frag");
     this.shaderProgram.addShader(this.gl.VERTEX_SHADER,
-        "../util/defaultShader2D.vert");
+        vertexShaderFileName);
+    this.shaderProgram.addShader(this.gl.FRAGMENT_SHADER,
+        fragmentShaderFileName);
     this.shaderProgram.linkShaders();
     this.shaderProgram.enable();
-    this.shaderProgram.modelViewMatrix =
-        this.shaderProgram.indexOfUniformVariable("modelViewMatrix");
-    this.shaderProgram.useTexture =
-        this.shaderProgram.indexOfUniformVariable("useTexture");
     //
     // load image
     this.loadImage = function(imageFileName, callFunc){
@@ -95,10 +106,22 @@ var SimpleScene2D = function(canvas){
         this.triangleVertexPositionBuffer.itemSize = 3;
         this.triangleVertexPositionBuffer.numItems = 
             vertices.length / this.triangleVertexPositionBuffer.itemSize;
-        this.shaderProgram.vertexPositionAttribute = 
-            this.shaderProgram.indexOfVertexAttribute("appVertPos");
         this.gl.enableVertexAttribArray(
-            this.shaderProgram.vertexPositionAttribute);
+            this.shaderProgram.indexOfVertexAttribute("appVertPos"));
+    };
+    //
+    // set up normals buffer
+    this.setNormals = function(normals){
+        this.triangleVertexNormalBuffer = this.gl.createBuffer();
+        this.gl.bindBuffer(this.gl.ARRAY_BUFFER, 
+            this.triangleVertexNormalBuffer);
+        this.gl.bufferData(this.gl.ARRAY_BUFFER, new Float32Array(normals),
+            this.gl.STATIC_DRAW);
+        this.triangleVertexNormalBuffer.itemSize = 3;
+        this.triangleVertexNormalBuffer.numItems = 
+            normals.length / this.triangleVertexNormalBuffer.itemSize;
+        this.gl.enableVertexAttribArray(
+            this.shaderProgram.indexOfVertexAttribute("appVertNormal"));
     };
     //
     // set up vertex colors
@@ -111,10 +134,8 @@ var SimpleScene2D = function(canvas){
         this.triangleVertexColorBuffer.itemSize = 3;
         this.triangleVertexColorBuffer.numItems = 
             colors.length / this.triangleVertexColorBuffer.itemSize;
-        this.shaderProgram.vertexColorAttribute = 
-            this.shaderProgram.indexOfVertexAttribute("appVertCol");
         this.gl.enableVertexAttribArray(
-            this.shaderProgram.vertexColorAttribute);
+            this.shaderProgram.indexOfVertexAttribute("appVertCol"));
     };
     //
     // set up texture coordinates
@@ -127,10 +148,8 @@ var SimpleScene2D = function(canvas){
         this.textureCoordinateBuffer.itemSize = 2;
         this.textureCoordinateBuffer.numItems = 
             textureCoordinates.length / this.textureCoordinateBuffer.itemSize;
-        this.shaderProgram.textureCoordinateAttribute = 
-            this.shaderProgram.indexOfVertexAttribute("appTexCoord");
         this.gl.enableVertexAttribArray(
-            this.shaderProgram.textureCoordinateAttribute);
+            this.shaderProgram.indexOfVertexAttribute("appTexCoord"));
     };
     //
     // set up index buffer
@@ -145,49 +164,148 @@ var SimpleScene2D = function(canvas){
         this.nrOfTriangleIndices = indices.length;
     };
     //
-    // set model view matrix
+    // set model view matrix and normal matrix if required
     this.setModelViewMatrix = function(matrix){
-        this.gl.uniformMatrix4fv(this.shaderProgram.modelViewMatrix, 
+        this.gl.uniformMatrix4fv(
+            this.shaderProgram.indexOfUniformVariable("modelViewMatrix"),
             false, matrix);
+        if (typeof this.triangleVertexNormalBuffer !== "undefined"){
+            normalMatrix = mat3.create();
+            mat3.normalFromMat4(normalMatrix, modelViewMatrix);
+            this.gl.uniformMatrix3fv(
+                this.shaderProgram.indexOfUniformVariable("normalMatrix"),
+                false, normalMatrix);
+        } 
     };
     //
     // switch on texture usage
     this.setUseTexture = function(flag){
-        this.gl.uniform1i(this.shaderProgram.useTexture, flag);
+        this.gl.uniform1i(
+            this.shaderProgram.indexOfUniformVariable("useTexture"),
+            flag);
         this.useTexture = flag;
     };
     //
-    // draw the scene
-    this.draw = function(){
-        this.setUseTexture(this.useTexture);
-        this.gl.clearColor(0.0, 0.0, 0.0, 1.0);
-        this.gl.enable(this.gl.DEPTH_TEST);
-        this.gl.viewport(0, 0, this.gl.viewportWidth, this.gl.viewportHeight);
-        this.gl.clear(this.gl.COLOR_BUFFER_BIT | this.gl.DEPTH_BUFFER_BIT);
+    // get shader program
+    this.getShaderProgram = function(){
+        return this.shaderProgram;
+    };
+    //
+    // get gl context
+    this.getGl = function(){
+        return this.gl;
+    };
+    //
+    // set clear color
+    this.setClearColor = function(r, g, b){
+        this.ccR=r;
+        this.ccG=g;
+        this.ccB=b;
+    };
+    //
+    // set light position
+    this.setLightPosition = function(pos){
+        this.gl.uniform3fv(
+            this.shaderProgram.indexOfUniformVariable("lightPosition"), pos);
+    };
+    //
+    // set material matrix
+    this.setMaterialMatrix = function(matrix){
+        this.gl.uniformMatrix3fv(
+            this.shaderProgram.indexOfUniformVariable("materialMatrix"),
+            false, matrix);
+    };
+    //
+    // set shininess
+    this.setShininess = function(s){
+        this.gl.uniform1f(
+          this.shaderProgram.indexOfUniformVariable("shininess"), s);
+    };
+    //
+    // set attenunation coefficients
+    this.setAttenuationCoefficients = function(coeff){
+        this.gl.uniform3fv(
+          this.shaderProgram.indexOfUniformVariable("attenuationCoefficients"), 
+          coeff);
+    };
+    // 
+    // set projection matrix
+    this.setProjectionMatrix = function(matrix){
+        this.gl.uniformMatrix4fv(
+            this.shaderProgram.indexOfUniformVariable("projectionMatrix"),
+            false, matrix);
+    };
+    //
+    // render the triangles
+    this.render = function(){
         this.gl.bindBuffer(this.gl.ARRAY_BUFFER, 
             this.triangleVertexPositionBuffer);
-        this.gl.vertexAttribPointer(this.shaderProgram.vertexPositionAttribute,
+        this.gl.vertexAttribPointer(
+            this.shaderProgram.indexOfVertexAttribute("appVertPos"),
             3, this.gl.FLOAT, false, 0, 0);
+        this.setUseTexture(this.useTexture);
         if (this.useTexture){
             this.gl.bindBuffer(this.gl.ARRAY_BUFFER,
                 this.textureCoordinateBuffer);
             this.gl.vertexAttribPointer(
-                this.shaderProgram.textureCoordinateAttribute,
+                this.shaderProgram.indexOfVertexAttribute("appTexCoord"),
                 2, this.gl.FLOAT, false, 0, 0);
             this.gl.activeTexture(this.gl.TEXTURE0);
             this.gl.bindTexture(this.gl.TEXTURE_2D, this.texture);
             this.gl.uniform1i(
                 this.shaderProgram.indexOfUniformVariable('appTexMapper'),
                this.texture.index);
-        } else {
+        }
+        //
+        // use vertex colors if defined
+        if (typeof this.triangleVertexColorBuffer !== "undefined"){
             this.gl.bindBuffer(this.gl.ARRAY_BUFFER, 
                 this.triangleVertexColorBuffer);
-            this.gl.vertexAttribPointer(this.shaderProgram.vertexColorAttribute,
+            this.gl.vertexAttribPointer(
+                this.shaderProgram.indexOfVertexAttribute("appVertCol"),
+                3, this.gl.FLOAT, false, 0, 0);
+        }
+        //
+        // use normals if defined
+        if (typeof this.triangleVertexNormalBuffer !== "undefined"){
+            this.gl.bindBuffer(this.gl.ARRAY_BUFFER, 
+                this.triangleVertexNormalBuffer);
+            this.gl.vertexAttribPointer(
+                this.shaderProgram.indexOfVertexAttribute("appVertNormal"),
                 3, this.gl.FLOAT, false, 0, 0);
         }
         this.gl.bindBuffer(this.gl.ELEMENT_ARRAY_BUFFER,   
             this.triangleIndexBuffer);
         this.gl.drawElements(this.gl.TRIANGLES, this.nrOfTriangleIndices,
             this.gl.UNSIGNED_SHORT, 0);
+    };
+    //
+    // draw the scene
+    this.draw = function(){
+        this.gl.clearColor(this.ccR, this.ccG, this.ccB, 1);
+        this.gl.enable(this.gl.DEPTH_TEST);
+        this.gl.viewport(0, 0, this.gl.viewportWidth, this.gl.viewportHeight);
+        this.gl.clear(this.gl.COLOR_BUFFER_BIT | this.gl.DEPTH_BUFFER_BIT);
+        this.render();
+    };
+    //
+    // draw the scene twice for anaglyph stereoscopic viewing
+    this.drawAnaglyph = function(stereoCamera){
+        this.gl.clearColor(this.ccR, this.ccG, this.ccB, 1);
+        this.gl.enable(this.gl.DEPTH_TEST);
+        this.gl.viewport(0, 0, this.gl.viewportWidth, this.gl.viewportHeight);
+        this.gl.clear(this.gl.COLOR_BUFFER_BIT | this.gl.DEPTH_BUFFER_BIT);
+        this.gl.colorMask(false, true, false, false);
+        this.setProjectionMatrix(stereoCamera.frustumLeft);
+        mat4.multiply(tMatrix, stereoCamera.lookAtLeft, modelViewMatrix);
+        this.setModelViewMatrix(tMatrix);
+        this.render();
+        this.gl.clear(this.gl.DEPTH_BUFFER_BIT);
+        this.gl.colorMask(true, false, false, false);
+        this.setProjectionMatrix(stereoCamera.frustumRight);
+        mat4.multiply(tMatrix, stereoCamera.lookAtRight, modelViewMatrix);
+        this.setModelViewMatrix(tMatrix);
+        this.render();
+        this.gl.colorMask(true, true, true, true);
     };
 };

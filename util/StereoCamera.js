@@ -45,39 +45,39 @@ var StereoCamera = function(){
         var betweenTheEyes = vec3.create();
 
         vec3.cross(this.viewingDirection, this.upVector, betweenTheEyes);
-        vec3.scale(betweenTheEyes, this.eyeSeparation * 0.5);
+        vec3.scale(betweenTheEyes, betweenTheEyes, this.eyeSeparation * 0.5);
 
         var eyePositionLeft = vec3.create();
         vec3.subtract(this.centerPosition, betweenTheEyes, eyePositionLeft);
         var centerLeft = vec3.create();
         vec3.add(eyePositionLeft, this.viewingDirection, centerLeft);
-        mat4.lookAt(eyePositionLeft, centerLeft, this.upVector, 
-            this.lookAtLeft);
+        mat4.lookAt(this.lookAtLeft, eyePositionLeft, centerLeft,
+            this.upVector);
 
         var eyePositionRight = vec3.create();
         vec3.add(this.centerPosition, betweenTheEyes, eyePositionRight);
         var centerRight = vec3.create();
         vec3.add(eyePositionRight, this.viewingDirection, centerRight);
-        mat4.lookAt(eyePositionRight, centerRight, this.upVector, 
-            this.lookAtRight);
+        mat4.lookAt(this.lookAtRight, eyePositionRight, centerRight, 
+            this.upVector);
 
         var perpDelta = 
             this.near * Math.tan(this.aperture / 180.0 * Math.PI / 2);
         var parallaxCorrection = this.near / this.focalLength;
 
-        mat4.frustum(
+        mat4.frustum(this.frustumLeft, 
             - this.whRatio * perpDelta + 
                 this.eyeSeparation / 2.0 * parallaxCorrection,
             this.whRatio * perpDelta + 
                 this.eyeSeparation / 2.0 * parallaxCorrection,
-            - perpDelta, perpDelta, this.near, this.far, this.frustumLeft);
+            - perpDelta, perpDelta, this.near, this.far);
 
-        mat4.frustum(
+        mat4.frustum(this.frustumRight, 
             - this.whRatio * perpDelta - 
                 this.eyeSeparation / 2.0 * parallaxCorrection,
             this.whRatio * perpDelta - 
                 this.eyeSeparation / 2.0 * parallaxCorrection,
-            - perpDelta, perpDelta, this.near, this.far, this.frustumRight);
+            - perpDelta, perpDelta, this.near, this.far);
 
     };
 };
