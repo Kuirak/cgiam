@@ -126,10 +126,15 @@ function initScene(scene) {
     //
     // modelViewMatrix
 
-    var modelViewMatrix = mat4.create();
+   // var modelViewMatrix = mat4.create();
+    var modelViewMatrix =
+        [2,0,0,0,
+         0,2,0,0,
+         0,0,2,0,
+         0,0,0,1.0]
     //mat4.identity(modelViewMatrix);
 
-    mat4.rotateZ(modelViewMatrix,modelViewMatrix,0.5);
+    //mat4.rotateZ(modelViewMatrix,modelViewMatrix,0.5);
 
 
     scene.setModelViewMatrix(modelViewMatrix);
