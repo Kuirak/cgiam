@@ -23,6 +23,9 @@ along with the cgiam WebGL course software.  If not, see
 
 
 var modelViewMatrix = mat4.create();
+var translateMatrix = mat4.create();
+var rotationMatrix = mat4.create();
+
 var canvas;
 var simpleScene;
 var oldPosX, oldPosY, g_drawInterval, isLeftMouseDown, isRightMouseDown;
@@ -48,14 +51,12 @@ function mouseUp(mouseEvent){
 }
 
 var motionFactor = 0.005;
-var rotatationAngle, totalX,totalY;
-var oldMousePosX,oldMousePosY;
 function mouseMove(mouseEvent){
     if (isRightMouseDown){
         var deltaX = mouseEvent.clientX - oldPosX;
         var deltaY = mouseEvent.clientY - oldPosY;
 
-        mat4.translate(modelViewMatrix, modelViewMatrix,
+        mat4.translate(translateMatrix, translateMatrix,
             [deltaX*motionFactor, -deltaY *motionFactor, 0]);
 
 
@@ -63,8 +64,8 @@ function mouseMove(mouseEvent){
     }else if(isLeftMouseDown){
         var deltaX = mouseEvent.clientX - oldPosX;
         var deltaY = mouseEvent.clientY - oldPosY;
-        rotatationAngle += (deltaX+deltaY)*-motionFactor;
-        mat4.rotateZ(modelViewMatrix,modelViewMatrix,(deltaX+deltaY)*-motionFactor);
+
+        mat4.rotateZ(rotationMatrix,rotationMatrix,(deltaY+deltaX)*-motionFactor);
 
     }
     oldPosX = mouseEvent.clientX;
@@ -100,7 +101,7 @@ function keyDown(keyEvent){
 }
 
 function redraw(){
-
+    mat4.multiply(modelViewMatrix,translateMatrix,rotationMatrix);
     simpleScene.setModelViewMatrix(modelViewMatrix);
     simpleScene.draw();
 
@@ -108,6 +109,8 @@ function redraw(){
 
 function doReset(){
     mat4.identity(modelViewMatrix);
+    mat4.identity(translateMatrix);
+    mat4.identity(rotationMatrix);
 
     redraw();
 }
