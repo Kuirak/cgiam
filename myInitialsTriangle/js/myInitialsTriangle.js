@@ -21,6 +21,21 @@ along with the cgiam WebGL course software.  If not, see
     
 =========================================================================*/
 
+
+var modelViewMatrix = mat4.create();
+var animationAngle = 0.0;
+var angleStep = 0.01;
+
+function doAnimationStep(){
+    mat4.identity(modelViewMatrix);
+
+    mat4.rotateZ(modelViewMatrix, modelViewMatrix, animationAngle);
+    mat4.translate(modelViewMatrix,modelViewMatrix,vec3.fromValues(0.5,0.5,0)) ;
+    mat4.scale(modelViewMatrix,modelViewMatrix,vec3.fromValues(0.5,0.5,0)) ;
+    animationAngle += angleStep;
+}
+
+
 function initScene(scene) {
     //
     // vertices
@@ -122,29 +137,22 @@ function initScene(scene) {
 
     ];
     scene.setIndices(indices);
-    //scene.setIndices([ 2, 3, 1 ]);
-    //
-    // modelViewMatrix
+}
 
-   // var modelViewMatrix = mat4.create();
-    var modelViewMatrix =
-        [2,0,0,0,
-         0,2,0,0,
-         0,0,2,0,
-         0,0,0,1.0]
-    //mat4.identity(modelViewMatrix);
+var canvas;
+var simpleScene;
 
-    //mat4.rotateZ(modelViewMatrix,modelViewMatrix,0.5);
-
-
-    scene.setModelViewMatrix(modelViewMatrix);
+function renderLoop(){
+    window.requestAnimFrame(renderLoop, canvas);
+    doAnimationStep();
+    simpleScene.setModelViewMatrix(modelViewMatrix);
+    simpleScene.draw();
 }
 
 function webGLStart() {
-    var canvas = document.getElementById("initials-canvas");
+    canvas = document.getElementById("initials-canvas");
     simpleScene = new SimpleScene2D(canvas);
-
     initScene(simpleScene);
-    simpleScene.draw();
+    renderLoop();
 
 }
