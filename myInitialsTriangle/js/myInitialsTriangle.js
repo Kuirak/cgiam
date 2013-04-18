@@ -50,6 +50,7 @@ function mouseUp(mouseEvent){
     clearInterval(g_drawInterval);
 }
 
+var rotationFactor = 0.01;
 var motionFactor = 0.005;
 function mouseMove(mouseEvent){
     if (isRightMouseDown){
@@ -65,7 +66,7 @@ function mouseMove(mouseEvent){
         var deltaX = mouseEvent.clientX - oldPosX;
         var deltaY = mouseEvent.clientY - oldPosY;
 
-        mat4.rotateZ(rotationMatrix,rotationMatrix,(deltaY+deltaX)*-motionFactor);
+        mat4.rotateZ(rotationMatrix,rotationMatrix,(deltaY)*-rotationFactor);
 
     }
     oldPosX = mouseEvent.clientX;
