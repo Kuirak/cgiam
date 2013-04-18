@@ -23,18 +23,114 @@ along with the cgiam WebGL course software.  If not, see
 
 
 var modelViewMatrix = mat4.create();
-var animationAngle = 0.0;
-var angleStep = 0.01;
+var canvas;
+var simpleScene;
+var oldPosX, oldPosY, g_drawInterval, isLeftMouseDown, isRightMouseDown;
 
-function doAnimationStep(){
+function mouseDown(mouseEvent){
+    // alert('button:' + mouseEvent.button);
+    if(mouseEvent.button ===2 && !isLeftMouseDown){
+        isRightMouseDown=true;
+    } else if(!isRightMouseDown){
+        isLeftMouseDown = true;
+    }
+
+    g_drawInterval = setInterval(redraw, 1/1000);
+}
+
+function mouseUp(mouseEvent){
+    if(mouseEvent.button ===2 && !isLeftMouseDown){
+        isRightMouseDown=false;
+    } else if(!isRightMouseDown){
+        isLeftMouseDown = false;
+    }
+    clearInterval(g_drawInterval);
+}
+
+var motionFactor = 0.005;
+var rotatationAngle, totalX,totalY;
+var oldMousePosX,oldMousePosY;
+function mouseMove(mouseEvent){
+    if (isRightMouseDown){
+        var deltaX = mouseEvent.clientX - oldPosX;
+        var deltaY = mouseEvent.clientY - oldPosY;
+        totalX += deltaX*motionFactor;
+        totalY -= deltaY *motionFactor
+        mat4.translate(modelViewMatrix, modelViewMatrix,
+            [totalY, totalX, 0]);
+        oldPosX = mouseEvent.clientX;
+        oldPosY = mouseEvent.clientY;
+
+    }else if(isLeftMouseDown){
+        var deltaX = mouseEvent.clientX - oldPosX;
+        var deltaY = mouseEvent.clientY - oldPosY;
+        var t0 =vec2.fromValues(oldMousePosX,oldMousePosY)   ;
+        var t1 =vec2.fromValues(mouseEvent.clientX,mouseEvent.clientY) ;
+        var t2 =vec2.fromValues(oldPosX,oldPosY);
+        var a = vec2.distance(t0,t1);
+        var b = vec2.distance(t0,t2);
+        var c = vec2.distance(t2,t1);
+
+       var alpha= Math.acos((b*b+c*c-a*a)/(2*b*c));
+         var radiansAlpha = alpha* Math.PI / 180;
+        rotatationAngle +=   radiansAlpha ;
+        mat4.rotateZ(modelViewMatrix,modelViewMatrix,rotatationAngle);
+
+    }
+    oldMousePosX = mouseEvent.clientX;
+    oldMousePosY = mouseEvent.clientY;
+
+}
+
+function keyDown(keyEvent){
+    switch(keyEvent.keyCode){
+        case 37: // links-Pfeil
+            mat4.translate(modelViewMatrix, modelViewMatrix,
+                [-motionFactor, 0, 0]);
+            break;
+        case 38: // hoch-Pfeil
+            mat4.translate(modelViewMatrix, modelViewMatrix,
+                [0, motionFactor, 0]);
+            break;
+        case 39: // rechts-Pfeil
+            mat4.translate(modelViewMatrix, modelViewMatrix,
+                [motionFactor, 0, 0]);
+            break;
+        case 40: // runter-Pfeil
+            mat4.translate(modelViewMatrix, modelViewMatrix,
+                [0, -motionFactor, 0]);
+            break;
+        case 82: // r
+            mat4.identity(modelViewMatrix);
+            break;
+        default:
+            break;
+    }
+    redraw();
+}
+
+function redraw(){
+
+    simpleScene.setModelViewMatrix(modelViewMatrix);
+    simpleScene.draw();
     mat4.identity(modelViewMatrix);
-    mat4.rotateZ(modelViewMatrix, modelViewMatrix, animationAngle);
-    mat4.translate(modelViewMatrix,modelViewMatrix,vec3.fromValues(0.5,0.5,0)) ;
-    mat4.rotateZ(modelViewMatrix, modelViewMatrix, -animationAngle);
+}
 
-    mat4.scale(modelViewMatrix,modelViewMatrix,vec3.fromValues(0.5,0.5,0)) ;
+function doReset(){
+    mat4.identity(modelViewMatrix);
+    totalX = 0;
+    totalY = 0;
+    rotatationAngle=0;
+    redraw();
+}
 
-    animationAngle += angleStep;
+function initInteraction(canvas) {
+    // for right mouse button interaction use it might be
+    // neccessary to use document instead of canvas
+    canvas.onmousedown = mouseDown;
+    canvas.onmouseup = mouseUp;
+    canvas.onmousemove = mouseMove;
+    document.addEventListener("keydown", keyDown, false);
 }
 
 
@@ -139,22 +235,19 @@ function initScene(scene) {
 
     ];
     scene.setIndices(indices);
+    mat4.identity(modelViewMatrix);
+    scene.setModelViewMatrix(modelViewMatrix);
 }
 
-var canvas;
-var simpleScene;
 
-function renderLoop(){
-    window.requestAnimFrame(renderLoop, canvas);
-    doAnimationStep();
-    simpleScene.setModelViewMatrix(modelViewMatrix);
-    simpleScene.draw();
-}
+
+
 
 function webGLStart() {
     canvas = document.getElementById("initials-canvas");
     simpleScene = new SimpleScene2D(canvas);
     initScene(simpleScene);
-    renderLoop();
+    initInteraction(canvas);
+    simpleScene.draw();
 
 }
