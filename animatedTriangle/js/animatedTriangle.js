@@ -22,13 +22,25 @@ along with the cgiam WebGL course software.  If not, see
 =========================================================================*/
 
 var modelViewMatrix = mat4.create();
-var animationAngle = 0.0;
-var angleStep = 0.01;
+var scaleStep =0.9
+var scaleVector =   vec3.fromValues(1.0,1.0,0);
+
 
 function doAnimationStep(){
     mat4.identity(modelViewMatrix);
-    mat4.rotate(modelViewMatrix, modelViewMatrix, animationAngle, [0, 0, 1]);
-    animationAngle += angleStep;
+
+    var scaleVectorLength =vec3.length(scaleVector);
+    //Größen min und max begrenzung
+    if(scaleVectorLength > 2){
+        scaleStep = 0.9;
+
+    } else if(scaleVectorLength<0.1){
+        scaleStep=1.1;
+    }
+    //vec skalieren
+    vec3.scale(scaleVector,scaleVector,scaleStep);
+    //mat um vec skalieren
+    mat4.scale(modelViewMatrix,modelViewMatrix,scaleVector);
 }
 
 function initScene(scene) {
@@ -52,6 +64,7 @@ function initScene(scene) {
     // indices
     var indices = [ 0, 1, 2 ];
     scene.setIndices(indices);
+
 }
 
 var canvas;
