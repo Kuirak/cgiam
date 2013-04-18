@@ -23,6 +23,8 @@ along with the cgiam WebGL course software.  If not, see
 
 
 var modelViewMatrix = mat4.create();
+var translateMatrix = mat4.create();
+var rotationMatrix = mat4.create();
 var canvas;
 var simpleScene;
 var oldPosX, oldPosY, g_drawInterval, isLeftMouseDown, isRightMouseDown;
@@ -48,37 +50,38 @@ function mouseUp(mouseEvent){
 }
 
 var motionFactor = 0.005;
-var rotatationAngle, totalX,totalY;
-var oldMousePosX,oldMousePosY;
+var rotatationAngle;
+var totalX=0;
+var totalY=0;
+
 function mouseMove(mouseEvent){
     if (isRightMouseDown){
         var deltaX = mouseEvent.clientX - oldPosX;
         var deltaY = mouseEvent.clientY - oldPosY;
         totalX += deltaX*motionFactor;
         totalY -= deltaY *motionFactor
-        mat4.translate(modelViewMatrix, modelViewMatrix,
-            [totalY, totalX, 0]);
-        oldPosX = mouseEvent.clientX;
-        oldPosY = mouseEvent.clientY;
+        mat4.translate(translateMatrix, translateMatrix,
+            [deltaX*motionFactor, -deltaY *motionFactor, 0]);
 
     }else if(isLeftMouseDown){
-        var deltaX = mouseEvent.clientX - oldPosX;
-        var deltaY = mouseEvent.clientY - oldPosY;
-        var t0 =vec2.fromValues(oldMousePosX,oldMousePosY)   ;
+        var deltaX = totalX- mouseEvent.clientX;
+        var deltaY = totalY - mouseEvent.clientY;
+        var t0 =vec2.fromValues(oldPosX,oldPosY)   ;
         var t1 =vec2.fromValues(mouseEvent.clientX,mouseEvent.clientY) ;
-        var t2 =vec2.fromValues(oldPosX,oldPosY);
+        var t2 =vec2.fromValues(totalX,totalY);
         var a = vec2.distance(t0,t1);
         var b = vec2.distance(t0,t2);
         var c = vec2.distance(t2,t1);
 
        var alpha= Math.acos((b*b+c*c-a*a)/(2*b*c));
-         var radiansAlpha = alpha* Math.PI / 180;
+         var radiansAlpha = alpha* Math.PI ;
+
         rotatationAngle +=   radiansAlpha ;
-        mat4.rotateZ(modelViewMatrix,modelViewMatrix,rotatationAngle);
+        mat4.rotateZ(rotationMatrix,rotationMatrix,radiansAlpha);
 
     }
-    oldMousePosX = mouseEvent.clientX;
-    oldMousePosY = mouseEvent.clientY;
+    oldPosX = mouseEvent.clientX;
+    oldPosY = mouseEvent.clientY;
 
 }
 
@@ -110,17 +113,17 @@ function keyDown(keyEvent){
 }
 
 function redraw(){
-
+    mat4.multiply(modelViewMatrix,translateMatrix,rotationMatrix);
     simpleScene.setModelViewMatrix(modelViewMatrix);
     simpleScene.draw();
-    mat4.identity(modelViewMatrix);
+
 }
 
 function doReset(){
     mat4.identity(modelViewMatrix);
-    totalX = 0;
-    totalY = 0;
-    rotatationAngle=0;
+    mat4.identity(translateMatrix);
+    mat4.identity(rotationMatrix);
+
     redraw();
 }
 
