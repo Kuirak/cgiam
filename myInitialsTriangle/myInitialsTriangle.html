@@ -1,6 +1,5 @@
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
-       "http://www.w3.org/TR/html4/loose.dtd">
-<html title="simpleTriangle">
+<!DOCTYPE HTML >
+<html>
 
 <!-- Quelle: http://learningwebgl.com/lessons/lesson01/index.html -->
 
@@ -16,8 +15,13 @@
     <script type="text/javascript" src="js/myInitialsTriangle.js"></script>
 </head>
 
-<body onload="webGLStart();">
-    <canvas id="initials-canvas" style="border: none;" width="500" height="500"></canvas>
+<body oncontextmenu="return false" onload="webGLStart();" >
+    <canvas id="initials-canvas" width="500" height="500"></canvas>
 </body>
+
+<h2> Interaction </h2>
+<form name="Formular" action="">
+    <input type="button" value="reset" onclick="doReset();">
+</form>
 
 </html>
