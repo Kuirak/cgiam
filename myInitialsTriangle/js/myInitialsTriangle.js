@@ -65,8 +65,13 @@ function mouseMove(mouseEvent){
     }else if(isLeftMouseDown){
         var deltaX = mouseEvent.clientX - oldPosX;
         var deltaY = mouseEvent.clientY - oldPosY;
-
-        mat4.rotateZ(rotationMatrix,rotationMatrix,(deltaY)*-rotationFactor);
+        var rotation;
+        if(mouseEvent.clientX > canvas.width /2){
+            rotation =(deltaY)*-rotationFactor;
+        } else{
+            rotation= (deltaY)*rotationFactor;
+        }
+        mat4.rotateZ(rotationMatrix,rotationMatrix,rotation);
 
     }
     oldPosX = mouseEvent.clientX;
