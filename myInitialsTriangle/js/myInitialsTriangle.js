@@ -28,10 +28,12 @@ var angleStep = 0.01;
 
 function doAnimationStep(){
     mat4.identity(modelViewMatrix);
-
     mat4.rotateZ(modelViewMatrix, modelViewMatrix, animationAngle);
     mat4.translate(modelViewMatrix,modelViewMatrix,vec3.fromValues(0.5,0.5,0)) ;
+    mat4.rotateZ(modelViewMatrix, modelViewMatrix, -animationAngle);
+
     mat4.scale(modelViewMatrix,modelViewMatrix,vec3.fromValues(0.5,0.5,0)) ;
+
     animationAngle += angleStep;
 }
 
