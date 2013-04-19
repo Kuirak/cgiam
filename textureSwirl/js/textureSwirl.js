@@ -95,8 +95,8 @@ function renderLoop(){
 function webGLStart() {
     canvas = document.getElementById("swirl-canvas");
     simpleScene = new SimpleScene(canvas,
-        "shaders/textureSwirl.vert",
-        "shaders/textureSwirl.frag");
+        "shaders/textureQuads.vert",
+        "shaders/textureQuads.frag");
     initScene(simpleScene);
     renderLoop();
 }

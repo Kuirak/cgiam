@@ -23,21 +23,25 @@ along with the cgiam WebGL course software.  If not, see
 
 var shaderProgram;
 var gl;
-var time = 0.0;
+var time = 1.0;
 var timeStep = 0.01;
 
 function initScene(scene) {
     //
     // vertices
     var vertices = [
-        -0.9,  0.45, 0,
-        -0.9, -0.45, 0,
-         0.9, -0.45, 0,
-         0.9,  0.45, 0];
+        -0.9,  0.9, 0, //0
+        -0.9, -0.9, 0, //1
+         0.9, -0.9, 0, //2
+         0.9,  0.9, 0];//3
     scene.setVertices(vertices);
     //
     // texture coordinates
-    var textureCoordinates = [ 0, 1, 0, 0, 1, 0, 1, 1];
+    var textureCoordinates = [
+        0, 1,     //0
+        0, 0,     //1
+        1, 0,     //2
+        1, 1];    //3
     scene.setTextureCoordinates(textureCoordinates);
     //
     // indices
@@ -68,14 +72,14 @@ function initScene(scene) {
         textureMax);
     //
     // texture
-    scene.setTexture("textures/openGL.png");
+    scene.setTexture("textures/samusGL.jpg");
 }
 
 function doAnimationStep(){
-    if (time > 1)
+    if (time > 3)
         timeStep *=-1;
     else 
-        if (time < 0)
+        if (time < 1)
             timeStep *=-1;
     time += timeStep;
 }
@@ -93,10 +97,10 @@ function renderLoop(){
 }
 
 function webGLStart() {
-    canvas = document.getElementById("swirl-canvas");
+    canvas = document.getElementById("quads-canvas");
     simpleScene = new SimpleScene(canvas,
-        "shaders/textureSwirl.vert",
-        "shaders/textureSwirl.frag");
+        "shaders/textureQuads.vert",
+        "shaders/textureQuads.frag");
     initScene(simpleScene);
     renderLoop();
 }
