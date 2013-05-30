@@ -54,7 +54,7 @@ function initScene(scene) {
     scene.setIndices(indices);
     //
     // parameters for light calculations
-    lightPosition = vec3.fromValues(0, 0, -2);
+    lightPosition = vec3.fromValues(3, 3, 3);
     attenuationCoefficients = vec3.fromValues(1.0, 0.001, 0.001);
     projectionMatrix = mat4.create();
     mat4.frustum(projectionMatrix, 
