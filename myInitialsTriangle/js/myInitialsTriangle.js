@@ -51,7 +51,7 @@ function mouseUp(mouseEvent){
 }
 
 var rotationFactor = 0.01;
-var motionFactor = 0.005;
+var motionFactor;
 function mouseMove(mouseEvent){
     if (isRightMouseDown){
         var deltaX = mouseEvent.clientX - oldPosX;
@@ -124,6 +124,7 @@ function doReset(){
 function initInteraction(canvas) {
     // for right mouse button interaction use it might be
     // neccessary to use document instead of canvas
+    motionFactor = 2/canvas.width;
     canvas.onmousedown = mouseDown;
     canvas.onmouseup = mouseUp;
     canvas.onmousemove = mouseMove;
