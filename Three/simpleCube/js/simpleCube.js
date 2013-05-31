@@ -2,9 +2,53 @@
 
 function threeStart() {
 
+    var oldPosX, oldPosY,initDistCubeCamera;
+
+    var isMouseDown =false;
+
+    function mouseDown(e) {
+       isMouseDown =true;
+    }
+
+    function mouseUp(e) {
+       isMouseDown =false;
+    }
+
+    var motionFactorX = 0.5;
+    var motionFactorY = 0.5;
+    function mouseMove(e){
+      if(isMouseDown){
+          var deltaX = e.clientX - oldPosX;
+          var deltaY = e.clientY - oldPosY;
+
+           if(deltaX !== 0){
+              camera.translateX(deltaX *motionFactorX );
+
+           }
+          if(deltaY !== 0){
+              camera.translateY(deltaY *motionFactorY );
+
+
+          }
+
+          camera.lookAt( cube.position );
+
+          var diffToInit = initDistCubeCamera- camera.position.distanceTo(cube.position);
+          camera.translateZ(diffToInit);
+      }
+
+
+
+        oldPosX = e.clientX;
+        oldPosY = e.clientY;
+
+    }
+
     var renderer = new THREE.WebGLRenderer();
     renderer.setSize( 800, 600 );
     document.body.appendChild( renderer.domElement );
+
+
 
     var scene = new THREE.Scene();
 
@@ -15,7 +59,7 @@ function threeStart() {
         10000           // Far plane
     );
     camera.position.set( -15, 10, 10 );
-    camera.lookAt( scene.position );
+
 
     scene.add( camera );
 
@@ -24,10 +68,19 @@ function threeStart() {
     new THREE.MeshLambertMaterial( { color: 0xFF0000, ambient: 0xFF0000 } )
     );
     scene.add( cube );
-
+    initDistCubeCamera =camera.position.distanceTo(cube.position);
+    camera.lookAt( cube.position );
     var light = new THREE.PointLight( 0xFFFF00 );
     light.position.set( -15, 10, 10 );
     scene.add( light );
+    renderer.domElement.onmousedown=mouseDown;
+    renderer.domElement.onmouseup=mouseUp;
+    renderer.domElement.onmousemove=mouseMove;
 
-    renderer.render( scene, camera );
-};
+
+    function render() {
+        requestAnimationFrame(render);
+        renderer.render(scene, camera);
+    }
+    render();
+}
