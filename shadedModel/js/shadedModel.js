@@ -59,11 +59,11 @@ function initScene(scene) {
     projectionMatrix = mat4.create();
     mat4.frustum(projectionMatrix, 
         -0.15, 0.15, -0.15, 0.15, 0.5, 5);
-    shininess = 96.1;
-    materialMatrix = [ 
-        0.100000, 0.100000, 0.100000,
-        0.040000, 0.040000, 0.940000,
-        1.000000, 1.000000, 1.000000];
+    shininess = 32.0;
+    materialMatrix = [
+        0.250000, 0.200000, 0.070000,  //a
+        0.750000, 0.610000, 0.230000,  //d
+        0.630000, 0.560000, 0.370000];  //s
     //
     // shader program parameters
     shaderProgram = scene.getShaderProgram();
