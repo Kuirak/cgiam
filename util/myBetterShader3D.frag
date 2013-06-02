@@ -46,8 +46,8 @@ void main(void) {
 
 
     float PI = 3.1415;
-    //float refractiveIndex =0.181;
-    //vec3 fresnel = materialMatrix[2]+(vec3(1.0,1.0,1.0) -materialMatrix[2]) * pow(1.0-clamp(dot(v,h),0.1,0.1),5);
+   // float temp = pow(1.0-clamp(dot(v,h),0,1),5);
+   // vec3 fresnel = materialMatrix[2] + (vec3(1.0,1.0,1.0)-materialMatrix[2])*temp ;
 
 
     // specular Color * (cos between reflected and viewDir) ^ shininess * signldotn
