@@ -97,8 +97,8 @@ function renderLoop(){
 function webGLStart() {
     canvas = document.getElementById("model-canvas");
     simpleScene = new SimpleScene(canvas,
-        "../util/defaultShader3D.vert",  
-        "../util/defaultShader3D.frag");
+        "../util/myShader3D.vert",
+        "../util/myShader3D.frag");
     initScene(simpleScene);
     renderLoop();
 }
