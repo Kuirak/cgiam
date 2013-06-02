@@ -1,9 +1,11 @@
+// http://www.altdevblogaday.com/2011/12/19/microfacet-brdf/
+
 precision mediump float;
 
 uniform float shininess;
 uniform mat3  materialMatrix;
 uniform vec3  lightPosition;
-uniform vec3  attenuationCoefficients;
+
 
 //input pro fragment (barycentric) interpolated vertices from GPU
 varying vec3 position;
@@ -20,23 +22,19 @@ void main(void) {
     float d = length(l);
 
 
-    //strange attenuation
-    // y no use 1/(d*d)
-    float attenuation = 1.0 / (attenuationCoefficients[0] +
-          d * attenuationCoefficients[1] +
-          d * d * attenuationCoefficients[2]);
+    //quadratic falloff  of light
+    float attenuation = 1.0/ (d *d);
 
     // normalized direction form vertex to light
     l = normalize(l);
 
-    //calculate reflection direction
-    vec3 r = reflect(-l, n);
-
     //normalized direction form vertex to camera
     vec3 v = normalize(-position);
 
-    //ambient color
-    vec3 ambient = materialMatrix[0];
+    //halfVector between camera and light
+    // h = theoretical normal for mirror reflection
+    vec3 h = normalize(v+l);
+
 
 
     //|l|=1 , |n|=1 ==> dot(l,n) = cos between l,n
@@ -44,20 +42,34 @@ void main(void) {
     float lDotn = max(0.0, dot(l, n));
 
     //cos of angle between reflectedlightDir and  viewDir
-    float rDotv = max(0.0, dot(r, v));
+    float nDoth = max(0.0, dot(n, h));
+
+
+    float PI = 3.1415;
+    //float refractiveIndex =0.181;
+    //vec3 fresnel = materialMatrix[2]+(vec3(1.0,1.0,1.0) -materialMatrix[2]) * pow(1.0-clamp(dot(v,h),0.1,0.1),5);
+
 
     // specular Color * (cos between reflected and viewDir) ^ shininess * signldotn
     // signldotn > 0 if light above surface ( lightDir and normal point in same general direction)
     // signldotn = 0 if light parallel to surface
     // signldotn < 0 if light below surface
     // shininess defines sharpness of highlight, makes  cosinus bubbel narrower
-    vec3 specular =  materialMatrix[2] * pow(rDotv, shininess) * sign(lDotn);
+    vec3 specular =  materialMatrix[2] * pow(nDoth, shininess) * sign(lDotn);
 
     // lambert diffuse = diffuse color * cos between lightDir and normal
-    vec3 diffuse = materialMatrix[1] * lDotn;
+    vec3 diffuse = materialMatrix[1] * lDotn * 1.0/PI;
+
+    //ambient color
+    //vec3 ambient = materialMatrix[0];
+    vec3 diffuseAmbient = materialMatrix[1]/PI * materialMatrix[0] * PI;
+    vec3 specularAmbient= materialMatrix[2]/PI * materialMatrix[0] * PI;
+    vec3 ambient = diffuseAmbient +specularAmbient;
+
 
     // combine ambient with distance attenuated  diffuse and specular
-    vec3 color = ambient + (diffuse + specular) * attenuation;
+    float lightPower =100.0;
+    vec3 color = ambient + (diffuse + specular) * attenuation*lightPower;
 
 
     gl_FragColor = vec4(color, 1.0);

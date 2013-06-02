@@ -60,10 +60,18 @@ function initScene(scene) {
     mat4.frustum(projectionMatrix, 
         -0.15, 0.15, -0.15, 0.15, 0.5, 5);
     shininess = 32.0;
+//    materialMatrix = [
+//        0.250000, 0.200000, 0.070000,  //a
+//        0.750000, 0.610000, 0.230000,  //d
+//        0.630000, 0.560000, 0.370000];  //s
+    var ambientLight ={ r:0.25,g:0.25,b:0.25};
+    var specular ={ r:1.0,g:0.76557,b:0.336057};
+    var diffuse ={ r:0.0,g:0.0,b:0.0};
     materialMatrix = [
-        0.250000, 0.200000, 0.070000,  //a
-        0.750000, 0.610000, 0.230000,  //d
-        0.630000, 0.560000, 0.370000];  //s
+        ambientLight.r, ambientLight.g, ambientLight.b,
+        diffuse.r, diffuse.g, diffuse.b,
+        specular.r, specular.g, specular.b];
+
     //
     // shader program parameters
     shaderProgram = scene.getShaderProgram();
@@ -98,7 +106,7 @@ function webGLStart() {
     canvas = document.getElementById("model-canvas");
     simpleScene = new SimpleScene(canvas,
         "../util/myShader3D.vert",
-        "../util/myShader3D.frag");
+        "../util/myBetterShader3D.frag");
     initScene(simpleScene);
     renderLoop();
 }
